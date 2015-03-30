@@ -30,7 +30,7 @@ public class HTTPServer {
 		{
 			Socket socket = serverSocket.accept();
 			
-			System.out.println("Client Connection Received");
+			System.out.println("Client connection received from " + socket.getInetAddress().getCanonicalHostName());
 			
 			BufferedReader in = new BufferedReader( new InputStreamReader(socket.getInputStream()));
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);	
@@ -44,12 +44,22 @@ public class HTTPServer {
 			
 			System.out.println(firstLine);
 			String parts[] = firstLine.split(" ");
+			if(parts.length != 3)
+			{
+				out.append("HTTP/1.1 400 Bad Request\n\r\n");
+				System.out.println("Response: HTTP/1.1400 Bad Request");
+				in.close();
+				out.close();
+				socket.close();
+				continue;
+			}
 			String method = parts[0],
 					path = parts[1],
 					version = parts[2];
 			
 			if(!version.equalsIgnoreCase("HTTP/1.1")){
-				out.append("HTTP/1.1 505 HTTP Version Not Supported\n\r\n\r");				
+				out.append("HTTP/1.1 505 HTTP Version Not Supported\n\r\n");
+				System.out.println("Response: HTTP/1.1 505 HTTP Version Not Supported");
 			}
 			else if(method.equalsIgnoreCase("get"))
 			{
@@ -58,7 +68,9 @@ public class HTTPServer {
 			else
 			{
 				//At present not handling any other protocol :(
-				out.append("HTTP/1.1 405 Method Not Allowed\n\r\n\r");
+				out.append("HTTP/1.1 405 Method Not Allowed\n\r\n");
+				System.out.println("Response: HTTP/1.1 405 Method Not Allowed");
+				
 			}
 			in.close();
 			out.close();
@@ -93,7 +105,8 @@ public class HTTPServer {
 			}
 			if(!found)
 			{
-				out.append("HTTP/1.1 404 Not Found\n\r\n\r");
+				out.append("HTTP/1.1 404 Not Found\n\r\n");
+				System.out.println("Response: HTTP/1.1 404 Not Found");
 				return;				
 			}
 		}
@@ -101,7 +114,8 @@ public class HTTPServer {
 		toServe = new File(fileName);
 		if(!toServe.exists())
 		{
-			out.append("HTTP/1.1 404 Not Found\n\r\n\r");
+			out.append("HTTP/1.1 404 Not Found\n\r\n");
+			System.out.println("Response: HTTP/1.1 404 Not Found");
 			return;
 		}
 		
@@ -109,7 +123,8 @@ public class HTTPServer {
 			
 			System.out.println("Serving " + fileName);
 			
-			out.append("HTTP/1.1 200 OK\n\r\n\r");
+			out.append("HTTP/1.1 200 OK\n\r\n");
+			System.out.println("Response: HTTP/1.1 200 OK");
 			String inputLine;
 			while ((inputLine = br.readLine()) != null) {
 		        out.println(inputLine);
